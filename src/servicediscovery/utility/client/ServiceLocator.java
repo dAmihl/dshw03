@@ -34,6 +34,7 @@ public class ServiceLocator {
 	
 	public ServiceLocator(Integer port){
 		this.PORT = port;
+		this.locatedAddresses = new ArrayList<>();
 	}
 	
 	public ArrayList<InetAddress> getLocatedAddresses(){
