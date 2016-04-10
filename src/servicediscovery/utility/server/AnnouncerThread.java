@@ -9,40 +9,58 @@ import java.net.SocketException;
 
 import servicediscovery.utility.Protocol;
 
+/**
+ * Thread to announce discoveries.
+ * @author dAmihl, Martin
+ *
+ */
 public class AnnouncerThread implements Runnable {
-	
 	private Integer PORT;
 	private MulticastSocket socket;
 	private boolean isRunning = true;
 	
+	/**
+	 * Constructor.
+	 * @param port
+	 */
 	public AnnouncerThread(Integer port){
 		this.PORT = port;
 	}
-
+	
+	/**
+	 * Executes the run method of the thread thread.
+	 */
 	@Override
 	public void run() {
 		try {
+			// create socket and datagram package
 			this.socket = new MulticastSocket(PORT);
 			socket.joinGroup(Protocol.getMulticastAddress());
 			socket.setReuseAddress(true);
 			DatagramPacket receivedPacket = Protocol.getNewEmptyDatagramPacket();
 			
+			// try to receive packages
 			while(isRunning){
 				socket.receive(receivedPacket);
-				System.out.println("Received discovery package from "+receivedPacket.getAddress()+". Responding now..");	
+				System.out.println("Received discovery package from "+receivedPacket.getAddress()+".\n Responding now...");	
 				byte[] buf = new byte[256];
 				sendResponse(receivedPacket);
 			}
+			
+			// close socket
 			closeAll();
 		} catch (SocketException e) {
 			System.out.println("Could not create DatagramSocket.");
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
+	/**
+	 * Method sends response packages.
+	 * @param pack
+	 */
 	private void sendResponse(DatagramPacket pack){
 		byte[] buf = new byte[256];
 		DatagramSocket datagramSocket = null;
@@ -52,10 +70,8 @@ public class AnnouncerThread implements Runnable {
 			datagramSocket.connect(pack.getAddress(), pack.getPort());
 			datagramSocket.send(responsePacket);
 		} catch (SocketException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally{
 			if (datagramSocket != null){
@@ -65,12 +81,17 @@ public class AnnouncerThread implements Runnable {
 		
 	}
 	
+	/**
+	 * Stops current thread.
+	 */
 	public void stop(){
 		this.isRunning = false;
 	}
 	
+	/**
+	 * Closes used socket.
+	 */
 	private void closeAll(){
 		this.socket.close();
 	}
-
 }

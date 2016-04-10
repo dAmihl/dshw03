@@ -4,38 +4,51 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-
 import servicediscovery.utility.Protocol;
 
-public class DiscoveryThread implements Runnable {
+/**
+ * Thread to discover servers.
+ * @author dAmihl, Martin
+ *
+ */
 
+public class DiscoveryThread implements Runnable {
 	private Integer PORT;
 	private ServiceLocator.OnServicesLocatedNotify serviceNotify;
 	private DatagramSocket socket;
 	
-	
+	/**
+	 * Constructor.
+	 * @param port
+	 * @param notifier
+	 */
 	public DiscoveryThread(Integer port, ServiceLocator.OnServicesLocatedNotify notifier){
 		this.PORT = port;
 		this.serviceNotify = notifier;
 	}
 	
+	/**
+	 * Executes the run method of the thread.
+	 */
 	@Override
 	public void run() {
 		try {
+			// create a new datagram socket and set the timeout
 			socket = new DatagramSocket();
 			socket.setSoTimeout(10000);
 			
+			// create a package and send it
 			DatagramPacket pack = Protocol.getDiscoveryDatagramPacket(PORT);
 			socket.send(pack);
 			
-			
+			// create an array list of internet addresses where received responses are stored
 			ArrayList<InetAddress> tmpReceivedResponses = new ArrayList<InetAddress>();
 			try{
+				// try to receive a package and discover its address.
 				do{
 					DatagramPacket receivedPacket = Protocol.getNewEmptyDatagramPacket();
 					socket.receive(receivedPacket);
@@ -57,11 +70,13 @@ public class DiscoveryThread implements Runnable {
 			System.out.println("Could not send discovery message.");
 			e.printStackTrace();
 		}
-		
 	}
 	
+	/**
+	 * Checks if adresses are located.
+	 * @param addresses
+	 */
 	private void addressesLocated(ArrayList<InetAddress> addresses){
 		this.serviceNotify.onAddressesLocated(addresses);
 	}
-
 }
