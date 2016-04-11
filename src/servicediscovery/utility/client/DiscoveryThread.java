@@ -21,6 +21,8 @@ public class DiscoveryThread implements Runnable {
 	private ServiceLocator.OnServicesLocatedNotify serviceNotify;
 	private DatagramSocket socket;
 	
+	private Integer TIMEOUT = 5000;
+	
 	/**
 	 * Constructor.
 	 * @param port
@@ -39,7 +41,7 @@ public class DiscoveryThread implements Runnable {
 		try {
 			// create a new datagram socket and set the timeout
 			socket = new DatagramSocket();
-			socket.setSoTimeout(10000);
+			socket.setSoTimeout(TIMEOUT);
 			
 			// create a package and send it
 			DatagramPacket pack = Protocol.getDiscoveryDatagramPacket(PORT);
@@ -56,7 +58,10 @@ public class DiscoveryThread implements Runnable {
 					System.out.println("DISCOVERY_THREAD: Received response from "+receivedPacket.getAddress());	
 				}while(true);
 			}catch (SocketTimeoutException e) {
-			      System.out.println("Timeout");
+			      System.out.println("Timeout.");
+		    }catch (Exception e){
+		    	this.serviceNotify.onThreadShutdown();
+		    	return;
 		    }
 			addressesLocated(tmpReceivedResponses);
 			

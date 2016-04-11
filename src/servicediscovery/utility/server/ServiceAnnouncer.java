@@ -15,6 +15,7 @@ public class ServiceAnnouncer {
 	 */
 	public ServiceAnnouncer(Integer port){
 		this.PORT = port;
+		addShutdownHook();
 	}
 	
 	/**
@@ -23,20 +24,33 @@ public class ServiceAnnouncer {
 	public void start(){
 		this.announcerThread = new Thread(new AnnouncerThread(this.PORT));
 		this.announcerThread.start();
+		
 	}
+	
+	/**
+	 * Adds a shutdown hook to gracefully shutdown service announcer..
+	 */
+	private void addShutdownHook(){
+		Runtime.getRuntime().addShutdownHook(new Thread(){
+			@Override
+            public void run()
+            {
+				System.out.println("Gracefully shutting down the ServiceAnnouncer..");
+                shutdown();
+            }
+		});
+	}
+	
 	
 	/**
 	 * Method ends the thread.
 	 */
 	public void shutdown(){
 		if (this.announcerThread != null){
-			// try to end thread
-			try {
-				this.announcerThread.join(1);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			this.announcerThread.interrupt();
 		}
 	}
+	
+	
 
 }

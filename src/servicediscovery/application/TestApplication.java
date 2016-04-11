@@ -1,5 +1,6 @@
 package servicediscovery.application;
 
+import servicediscovery.utility.client.DiscoveryNotify;
 import servicediscovery.utility.client.ServiceLocator;
 import servicediscovery.utility.server.ServiceAnnouncer;
 
@@ -15,6 +16,7 @@ public class TestApplication {
 	// port to test with
 	private static int TEST_PORT = 1337;
 	
+	private static ServiceLocator clientServiceLocator;
 	/**
 	 * Main method.
 	 * @param args
@@ -43,13 +45,36 @@ public class TestApplication {
 	 private static void runAsServer(){
 		 ServiceAnnouncer announcer = new ServiceAnnouncer(TEST_PORT);
 		 announcer.start();
+		 System.out.println("Started service announcer.. waiting for requests.");
+		 
 	 }
 	 
 	 /**
 	  * Let application run as client.
 	  */
 	 private static void runAsClient(){
-		 ServiceLocator locator = new ServiceLocator(TEST_PORT);
-		 locator.startDiscovery();
+		 clientServiceLocator = new ServiceLocator(TEST_PORT);
+		 System.out.println("Starting blocking discovery now..");
+		 clientServiceLocator.startBlockingDiscovery();
+		 System.out.println("Discovery blocked. Its done now since this is printed.");
+		
+		clientServiceLocator.startDiscoveryWithNotify(new DiscoveryNotify() {
+			
+			@Override
+			public void onDiscoveryFinished() {
+				System.out.println("NOTIFY: Discovery is finished since this notifier is called.");				
+			}
+		});
+		System.out.println("Notify discovery started, onFinished may be called after that.");
+		
+		
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	 }
+
+	
 }

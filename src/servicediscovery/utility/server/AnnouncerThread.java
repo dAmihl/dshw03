@@ -3,7 +3,6 @@ package servicediscovery.utility.server;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketException;
 
@@ -43,7 +42,6 @@ public class AnnouncerThread implements Runnable {
 			while(isRunning){
 				socket.receive(receivedPacket);
 				System.out.println("Received discovery package from "+receivedPacket.getAddress()+".\n Responding now...");	
-				byte[] buf = new byte[256];
 				sendResponse(receivedPacket);
 			}
 			
@@ -79,13 +77,6 @@ public class AnnouncerThread implements Runnable {
 			}
 		}
 		
-	}
-	
-	/**
-	 * Stops current thread.
-	 */
-	public void stop(){
-		this.isRunning = false;
 	}
 	
 	/**
